@@ -1,4 +1,4 @@
-from sqlalchemy import Column,Integer,String
+from sqlalchemy import Column,Integer,String,UniqueConstraint
 from database import Base
 class Student(Base):
     __tablename__='students'
@@ -6,3 +6,6 @@ class Student(Base):
     name=Column(String)
     age=Column(Integer)
     branch=Column(String)
+    __table_args__=(
+        UniqueConstraint('name','age','branch',name='unique_student'),
+    )
