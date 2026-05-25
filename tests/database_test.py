@@ -31,6 +31,7 @@ def get_sessionmaker(url: str) -> sessionmaker:
     session_maker = sessionmaker(
         autocommit=False,
         autoflush=False,
+        expire_on_commit=False,
         bind=engine
     )
     # Create tables
