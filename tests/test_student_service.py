@@ -1,24 +1,32 @@
 from unittest.mock import MagicMock
-from sqlalchemy.exc import IntegrityError
-from fastapi import HTTPException
 
-from services.student_service import (
-    get_students,
-    create_student
-)
+from database_test import get_session_maker
+from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
+from testcontainers.postgres import PostgresContainer
+from utils.container_utils import get_postgres_container
 
 from schemas import studentCreate
+from services.student_service import create_student, get_students
 
-def test_get_students():
-    mock_db = MagicMock()
 
-    mock_db.query.return_value.all.return_value = [
-        {"name": "John", "age": 20, "branch": "CSE"}
-    ]
+@pytest.fixture(scope="module")
+def test_session():
+    try:
+        with get_postgres_container() as container:
+            url = container.get_connection_url()
+            test_session = get_session_maker(url)
+            yield test_session
+    finally:
+        test_session.close()
 
-    result = get_students(mock_db)
-
-    assert result[0]["name"] == "John"
+def test_get_students(test_session):
+    try:
+        # Insert John
+        result = get_students(test_session)
+        assert result[0]["name"] == "John"
+    finally:
+        # Erase John
 
 def test_create_student():
     mock_db = MagicMock()

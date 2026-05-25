@@ -1,7 +1,6 @@
-from testcontainers.postgres import PostgresContainer
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from testcontainers.postgres import PostgresContainer
 
 from database import Base
 
@@ -21,10 +20,23 @@ TestingSessionLocal = sessionmaker(
     autoflush=False,
     bind=engine
 )
-
 # Create tables
 Base.metadata.create_all(bind=engine)
 
+def get_sessionmaker(url: str) -> sessionmaker:
+    # Create engine
+    engine = create_engine(url)
+
+    # Session
+    session_maker = sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=engine
+    )
+    # Create tables
+    Base.metadata.create_all(bind=engine)
+
+    return session_maker
 
 # Override DB dependency
 def override_get_db():
