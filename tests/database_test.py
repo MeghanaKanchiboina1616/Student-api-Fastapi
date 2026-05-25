@@ -18,4 +18,8 @@ def get_sessionmaker(url: str) -> sessionmaker:
     return session_maker
 
 def override_get_db():
-    pass
+    db = _test_session_maker()
+    try:
+        yield db
+    finally:
+        db.close()
