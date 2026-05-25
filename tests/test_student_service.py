@@ -1,35 +1,17 @@
 from unittest.mock import MagicMock
 
-import pytest
-from database_test import get_sessionmaker
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
-from testcontainers.postgres import PostgresContainer
 
 from models import Student
 from schemas import studentCreate
 from services.student_service import create_student, get_students
-from utils.container_utils import get_postgres_container
 
-
-@pytest.fixture(scope="module")
-def postgres_container():
-    with get_postgres_container() as container:
-        yield container
-
-@pytest.fixture(scope="module")
-def test_session(postgres_container):
-    try:
-        test_session = None
-        url = postgres_container.get_connection_url()
-        session_maker = get_sessionmaker(url)
-        test_session = session_maker()
-        yield test_session
-    finally:
-        if test_session:
-            test_session.close()
 
 def test_get_students(test_session):
+    # SETUP
+    # PROCESS AND ASSERT
+    # CLEANUP
     try:
         student = Student(
             name="John",
@@ -39,29 +21,27 @@ def test_get_students(test_session):
         test_session.add(student)
         test_session.flush()
         result = get_students(test_session)
-        print(result)
+        assert len(result) == 1
         assert result[0].name == "John"
-        test_session.reset()
+        assert result[0].age == 18
+        assert result[0].branch == "CSM"
+    except Exception as E:
+        raise Exception(f"Failed to test get students: {E}")
 
-    finally:
-        # We don't have to Erase John, Since session is not Commited
-        pass
-# def test_create_student():
-#     mock_db = MagicMock()
 
-#     student_data = studentCreate(
-#         name="John",
-#         age=20,
-#         branch="CSE"
-#     )
+def test_create_student(test_session):
+    student_data = studentCreate(
+        name="Mia",
+        age=22,
+        branch="ECE"
+    )
 
-#     result = create_student(mock_db, student_data)
+    result = create_student(test_session, student_data)
 
-#     mock_db.add.assert_called_once()
-#     mock_db.commit.assert_called_once()
-#     mock_db.refresh.assert_called_once()
+    assert result.name == "Mia"
+    assert result.age == 22
+    assert result.branch == "ECE"
 
-#     assert result.name == "John"
 
 # def test_create_duplicate_student():
 #     mock_db = MagicMock()
