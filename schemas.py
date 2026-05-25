@@ -1,6 +1,9 @@
-from pydantic import BaseModel
-class studentCreate(BaseModel):
-    name:str
-    age:int
-    branch:str
+from pydantic import BaseModel, Field
 
+class studentCreate(BaseModel):
+
+    name: str = Field(..., min_length=1)
+
+    age: int = Field(..., gt=0)
+
+    branch: str = Field(..., min_length=1)
